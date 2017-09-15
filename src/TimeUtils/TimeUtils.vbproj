@@ -7,7 +7,7 @@
     <ProjectGuid>{AD72CFAA-E78C-40BA-B9D6-6F10650633C8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>TradeWright.Utilities.Time</RootNamespace>
-    <AssemblyName>TimeUtils</AssemblyName>
+    <AssemblyName>TradeWright.TimeUtils</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
@@ -18,7 +18,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\debug\</OutputPath>
-    <DocumentationFile>TimeUtils.xml</DocumentationFile>
+    <DocumentationFile>TradeWright.TimeUtils.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -27,7 +27,7 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>TimeUtils.xml</DocumentationFile>
+    <DocumentationFile>TradeWright.TimeUtils.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
