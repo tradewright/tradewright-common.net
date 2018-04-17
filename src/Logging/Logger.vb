@@ -312,7 +312,7 @@ Public NotInheritable Class Logger
 
 #Region " IDisposable Support "
     ' This code added by Visual Basic to correctly implement the disposable pattern.
-    Public Sub Dispose() Implements IDisposable.Dispose, ILogger.Dispose
+    Public Sub Dispose() Implements IDisposable.Dispose
         ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
         Dispose(True)
         GC.SuppressFinalize(Me)
