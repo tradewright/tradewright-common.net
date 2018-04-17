@@ -1,30 +1,4 @@
-﻿#Region "License"
-
-' The MIT License (MIT)
-'
-' Copyright (c) 2017 Richard L King (TradeWright Software Systems)
-' 
-' Permission is hereby granted, free of charge, to any person obtaining a copy
-' of this software and associated documentation files (the "Software"), to deal
-' in the Software without restriction, including without limitation the rights
-' to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-' copies of the Software, and to permit persons to whom the Software is
-' furnished to do so, subject to the following conditions:
-' 
-' The above copyright notice and this permission notice shall be included in all
-' copies or substantial portions of the Software.
-' 
-' THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-' IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-' FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-' AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-' LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-' SOFTWARE.
-
-#End Region
-
-''
+﻿''
 ' Used to control the level of detail or importance of information that is
 ' logged.
 '
@@ -84,6 +58,7 @@ End Enum
 
 Public NotInheritable Class Logger
     Implements IDisposable
+    Implements ILogger
 
     ''
     ' Objects of this class are used to log information of a particular type
@@ -124,8 +99,8 @@ Public NotInheritable Class Logger
     ' Events
     '@================================================================================
 
-    Public Event Finished(sender As Object, e As EventArgs)
-    Public Event LogRecord(sender As Object, e As LogRecordEventArgs)
+    Public Event Finished(sender As Object, e As EventArgs) Implements ILogger.Finished
+    Public Event LogRecord(sender As Object, e As LogRecordEventArgs) Implements ILogger.LogRecord
 
     '@================================================================================
     ' Enums
@@ -180,7 +155,7 @@ Public NotInheritable Class Logger
     '   The logging level used by this <c>Logger</c> object in deciding
     '   whether to log.
     '@/
-    Public Property LogLevel() As LogLevel
+    Public Property LogLevel() As LogLevel Implements ILogger.LogLevel
         Get
             If mLogLevel = LogLevel.AsParent Then
                 If mParent Is Nothing Then
@@ -206,7 +181,7 @@ Public NotInheritable Class Logger
     ''' <returns>If <c>True</c>, this <c>Logger</c> object logs to its Parent
     '''   <c>Logger</c> object.
     ''' </returns>
-    Public Property LogToParent() As Boolean
+    Public Property LogToParent() As Boolean Implements ILogger.LogToParent
         Get
             LogToParent = mLogToParent
         End Get
@@ -236,7 +211,7 @@ Public NotInheritable Class Logger
     ' @see
     '
     '@/
-    Public Function IsLoggable(level As LogLevel) As Boolean
+    Public Function IsLoggable(level As LogLevel) As Boolean Implements ILogger.IsLoggable
         If Not Logging.IsLogLevelPermittedForApplication(level) Then Return False
 
         Return (level >= LogLevel)
@@ -271,7 +246,7 @@ Public NotInheritable Class Logger
     '   an object). It need not be supplied where there is no need to distinguish between
     '   log records from different sources.
     '@/
-    Public Sub Log(pLevel As LogLevel, pData As Object, Optional pSource As Object = Nothing)
+    Public Sub Log(pLevel As LogLevel, pData As Object, Optional pSource As Object = Nothing) Implements ILogger.Log
         Try ' to avoid problems with errors here being caught by
             ' lower stack frames which may attempt to log them!
 
@@ -311,7 +286,7 @@ Public NotInheritable Class Logger
 
 #Region " IDisposable Support "
     ' This code added by Visual Basic to correctly implement the disposable pattern.
-    Public Sub Dispose() Implements IDisposable.Dispose
+    Public Sub Dispose() Implements IDisposable.Dispose, ILogger.Dispose
         ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
         Dispose(True)
         GC.SuppressFinalize(Me)

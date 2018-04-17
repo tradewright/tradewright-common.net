@@ -1,30 +1,4 @@
-﻿#Region "License"
-
-' The MIT License (MIT)
-'
-' Copyright (c) 2017 Richard L King (TradeWright Software Systems)
-' 
-' Permission is hereby granted, free of charge, to any person obtaining a copy
-' of this software and associated documentation files (the "Software"), to deal
-' in the Software without restriction, including without limitation the rights
-' to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-' copies of the Software, and to permit persons to whom the Software is
-' furnished to do so, subject to the following conditions:
-' 
-' The above copyright notice and this permission notice shall be included in all
-' copies or substantial portions of the Software.
-' 
-' THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-' IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-' FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-' AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-' LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-' SOFTWARE.
-
-#End Region
-
-Imports TradeWright.Utilities.Time
+﻿Imports TradeWright.Utilities.Time
 
 Public NotInheritable Class BasicLogFormatter
 
@@ -135,19 +109,25 @@ Public NotInheritable Class BasicLogFormatter
     Private Function formatData(data As Object) As String
         If Not data.GetType.IsArray Then Return String.Empty
 
-        Dim s() = New String() {"{", "", "", "", "", "", ""}
+        Dim ar = CType(data, Array)
+
+        If ar.Length = 0 Then Return "{}"
+
+        Dim s(Math.Min(ar.Length - 1, 5)) As String
+
         Dim i = 0
-        For Each o As Object In CType(data, Array)
-            i = i + 1
-            If i = 5 Then
-                s(i) = "..."
-                Exit For
-            Else
-                s(i) = o.ToString
-            End If
+        For i = 0 To ar.Length - 1
+            s(i) = ar.GetValue(i).ToString
         Next
-        s(i + 1) = "}"
-        Return String.Join(",", s, 0, i + 2)
+
+        s(0) = "{" & s(0)
+        If i > 5 Then
+            s(5) = "...}"
+        Else
+            s(i - 1) &= "}"
+        End If
+
+        Return String.Join(", ", s)
     End Function
 
 End Class

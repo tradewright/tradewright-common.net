@@ -1,32 +1,6 @@
-﻿#Region "License"
+﻿Imports System.IO
 
-' The MIT License (MIT)
-'
-' Copyright (c) 2017 Richard L King (TradeWright Software Systems)
-' 
-' Permission is hereby granted, free of charge, to any person obtaining a copy
-' of this software and associated documentation files (the "Software"), to deal
-' in the Software without restriction, including without limitation the rights
-' to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-' copies of the Software, and to permit persons to whom the Software is
-' furnished to do so, subject to the following conditions:
-' 
-' The above copyright notice and this permission notice shall be included in all
-' copies or substantial portions of the Software.
-' 
-' THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-' IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-' FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-' AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-' LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-' SOFTWARE.
-
-#End Region
-
-Imports System.IO
-
-Imports TradeWright.Utilities.IO
+Imports TradeWright.Utilities.DataStorage
 Imports TradeWright.Utilities.Time
 
 ''' <summary>
@@ -80,21 +54,40 @@ Public NotInheritable Class FileLogListener
     ' Class Event Handlers
     '@================================================================================
 
-    Public Sub New(Optional filename As String = "",
-                       Optional formatter As ILogFormatter = Nothing,
-                       Optional overwrite As Boolean = False,
-                       Optional createBackup As Boolean = False,
-                       Optional unicode As Boolean = False,
-                       Optional timestampFormat As Time.TimestampFormats = Time.TimestampFormats.DateAndTimeISO8601)
-        mWriter = IO.IO.CreateWriteableTextFile(filename, overwrite, createBackup, unicode, True)
+    Public Sub New(stream As FileStream,
+                   Optional timestampFormat As Time.TimestampFormats = Time.TimestampFormats.DateAndTimeISO8601,
+                   Optional formatter As ILogFormatter = Nothing,
+                   Optional unicode As Boolean = False)
+        mWriter = New StreamWriter(stream, If(unicode, System.Text.Encoding.UTF8, System.Text.Encoding.Default))
+        setFormatter(formatter, timestampFormat)
+    End Sub
 
-        If formatter Is Nothing Then
-            mFormatter = New BasicLogFormatter(timestampFormat, False)
-        Else
-            mFormatter = formatter
-        End If
+    Public Sub New(fileInfo As FileInfo,
+                   Optional timestampFormat As Time.TimestampFormats = Time.TimestampFormats.DateAndTimeISO8601,
+                   Optional formatter As ILogFormatter = Nothing,
+                   Optional append As Boolean = False,
+                   Optional unicode As Boolean = False)
+        IO.Directory.CreateDirectory(Path.GetDirectoryName(fileInfo.FullName))
+        mWriter = New StreamWriter(fileInfo.Open(If(append, FileMode.Append, FileMode.Create)),
+                                   If(unicode, System.Text.Encoding.UTF8, System.Text.Encoding.Default))
+        setFormatter(formatter, timestampFormat)
+    End Sub
 
-        If mFormatter.Header <> "" Then mWriter.WriteLine(mFormatter.Header)
+    Public Sub New(writer As StreamWriter,
+                   Optional timestampFormat As Time.TimestampFormats = Time.TimestampFormats.DateAndTimeISO8601,
+                   Optional formatter As ILogFormatter = Nothing)
+        mWriter = writer
+        setFormatter(formatter, timestampFormat)
+    End Sub
+
+    Public Sub New(filename As String,
+                   Optional timestampFormat As Time.TimestampFormats = Time.TimestampFormats.DateAndTimeISO8601,
+                   Optional formatter As ILogFormatter = Nothing,
+                   Optional append As Boolean = False,
+                   Optional unicode As Boolean = False)
+        IO.Directory.CreateDirectory(Path.GetDirectoryName(filename))
+        mWriter = New StreamWriter(filename, append, If(unicode, System.Text.Encoding.UTF8, System.Text.Encoding.Default))
+        setFormatter(formatter, timestampFormat)
     End Sub
 
     '@================================================================================
@@ -145,6 +138,16 @@ Public NotInheritable Class FileLogListener
     ' Helper Functions
     '@================================================================================
 
+    Private Sub setFormatter(formatter As ILogFormatter, timestampFormat As Time.TimestampFormats)
+        If formatter Is Nothing Then
+            mFormatter = New BasicLogFormatter(timestampFormat, False)
+        Else
+            mFormatter = formatter
+        End If
+
+        If mFormatter.Header <> "" Then mWriter.WriteLine(mFormatter.Header)
+    End Sub
+
     Private isDisposed As Boolean = False        ' To detect redundant calls
 
     ' IDisposable
@@ -154,7 +157,7 @@ Public NotInheritable Class FileLogListener
                 mFinished = True
                 If mFormatter.Trailer <> "" Then mWriter.WriteLine(mFormatter.Trailer)
                 mWriter.Flush()
-                mWriter.Close()
+                mWriter.Dispose()
             End If
         End If
         Me.isDisposed = True

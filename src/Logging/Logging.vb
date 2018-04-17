@@ -1,33 +1,9 @@
-﻿#Region "License"
-
-' The MIT License (MIT)
-'
-' Copyright (c) 2017 Richard L King (TradeWright Software Systems)
-' 
-' Permission is hereby granted, free of charge, to any person obtaining a copy
-' of this software and associated documentation files (the "Software"), to deal
-' in the Software without restriction, including without limitation the rights
-' to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-' copies of the Software, and to permit persons to whom the Software is
-' furnished to do so, subject to the following conditions:
-' 
-' The above copyright notice and this permission notice shall be included in all
-' copies or substantial portions of the Software.
-' 
-' THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-' IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-' FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-' AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-' LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-' OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-' SOFTWARE.
-
-#End Region
-
+﻿Imports System.IO
 Imports System.Reflection
-Imports System.Windows.Forms
 
-Public NotInheritable Class Logging
+Imports TradeWright.Utilities.DataStorage
+
+Public Module Logging
 
     ' command line switch specifying the log filename
     Private Const SwitchLogFilename As String = "log"
@@ -35,41 +11,33 @@ Public NotInheritable Class Logging
     ' command line switch specifying the log level
     Private Const SwitchLogLevel As String = "loglevel"
 
-    Private Shared gLogManager As New LogManager
-    Private Shared gDefaultLogLevel As LogLevel = LogLevel.Normal
-    Private Shared gSequenceNumber As Integer = 0
-    Private Shared gLogFileName As String = String.Empty
-    Private Shared gDefaultLogger As New FormattingLogger("")
+    Private ReadOnly mLogManager As New LogManager
+    Private mDefaultLogLevel As LogLevel = LogLevel.Normal
+    Private mSequenceNumber As Integer = 0
+    Private mLogFileName As String = String.Empty
 
-    Private Shared gLogListeners As New HashSet(Of ILogListener)
-
-    Private Sub New()
-    End Sub
+    Private gLogListeners As New HashSet(Of ILogListener)
 
     ''' <summary>
     ''' Returns the path and filename of the log file created by a call to the
     ''' <c>SetupDefaultLogging</c> method.
     ''' </summary>
     ''' <returns>The path and filename of the log file.</returns>
-    Public Shared ReadOnly Property DefaultLogFileName() As String
+    Public ReadOnly Property DefaultLogFileName() As String
         Get
-            If gLogFileName = "" Then
+            If mLogFileName = "" Then
                 Dim clp = New CommandLine.CommandLineParser(Environment.CommandLine, " ")
-                If clp.IsSwitchSet(SwitchLogFilename) Then gLogFileName = clp.SwitchValue(SwitchLogFilename)
+                If clp.IsSwitchSet(SwitchLogFilename) Then mLogFileName = clp.SwitchValue(SwitchLogFilename)
 
-                If gLogFileName = "" Then
-                    gLogFileName = Application.LocalUserAppDataPath & "\" & "Logfile.log"
+                If mLogFileName = "" Then
+                    mLogFileName = $"{ApplicationDataPathUser}{Path.DirectorySeparatorChar}Logfile.log"
                 End If
             End If
-            Return gLogFileName
+            Return mLogFileName
         End Get
     End Property
 
-    Public Shared ReadOnly Property DefaultLogger() As FormattingLogger
-        Get
-            Return gDefaultLogger
-        End Get
-    End Property
+    Public ReadOnly Property DefaultLogger() As FormattingLogger = New FormattingLogger("")
 
     ''' <summary>
     ''' Sets or gets the default log level for <c>Logger</c> objects whose <c>LogLevel</c>
@@ -78,9 +46,9 @@ Public NotInheritable Class Logging
     ''' <returns>The default <c>LogLevel</c></returns>
     ''' <remarks> If this property is not set by the application, a Value of <c>Normal</c>
     ''' is assumed.</remarks>
-    Public Shared Property DefaultLogLevel() As LogLevel
+    Public Property DefaultLogLevel() As LogLevel
         Get
-            Return gDefaultLogLevel
+            Return mDefaultLogLevel
         End Get
         Set(value As LogLevel)
             If value = LogLevel.All Then
@@ -89,11 +57,11 @@ Public NotInheritable Class Logging
                 Debug.Assert(IsLogLevelPermittedForApplication(value), "This Value is not permitted in this context")
             End If
 
-            gDefaultLogLevel = value
+            mDefaultLogLevel = value
         End Set
     End Property
 
-    Public Shared Sub AddLogListener(infoType As String, listener As ILogListener, Optional synchronized As Boolean = False)
+    Public Sub AddLogListener(infoType As String, listener As ILogListener, Optional synchronized As Boolean = False)
         SyncLock gLogListeners
             If gLogListeners.Contains(listener) Then Throw New InvalidOperationException("This listener has already been added")
             gLogListeners.Add(listener)
@@ -101,8 +69,8 @@ Public NotInheritable Class Logging
         End SyncLock
     End Sub
 
-    Public Shared Sub Close()
-        gLogManager.Close()
+    Public Sub Close()
+        mLogManager.Close()
         SyncLock gLogListeners
             For Each logListener In gLogListeners
                 logListener.Dispose()
@@ -111,15 +79,15 @@ Public NotInheritable Class Logging
         End SyncLock
     End Sub
 
-    Public Shared Function GetLogger(infoType As String) As Logger
-        Return gLogManager.GetLogger(infoType)
+    Public Function GetLogger(infoType As String) As Logger
+        Return mLogManager.GetLogger(infoType)
     End Function
 
-    Friend Shared Function GetNextLoggingSequenceNum() As Integer
-        Return System.Threading.Interlocked.Increment(gSequenceNumber)
+    Friend Function GetNextLoggingSequenceNum() As Integer
+        Return System.Threading.Interlocked.Increment(mSequenceNumber)
     End Function
 
-    Public Shared Function IsLogLevelPermittedForApplication(value As LogLevel) As Boolean
+    Public Function IsLogLevelPermittedForApplication(value As LogLevel) As Boolean
         Select Case value
             Case LogLevel.All,
                     LogLevel.UseDefault,
@@ -131,7 +99,7 @@ Public NotInheritable Class Logging
         End Select
     End Function
 
-    Public Shared Function LogLevelFromString(Value As String) As LogLevel
+    Public Function LogLevelFromString(Value As String) As LogLevel
         Select Case Value.ToUpper
             Case "A", "ALL"
                 Return LogLevel.All
@@ -160,7 +128,7 @@ Public NotInheritable Class Logging
         End Select
     End Function
 
-    Public Shared Function LogLevelToShortString(Value As LogLevel) As String
+    Public Function LogLevelToShortString(Value As LogLevel) As String
         Select Case Value
             Case LogLevel.All
                 Return "A "
@@ -189,7 +157,7 @@ Public NotInheritable Class Logging
         End Select
     End Function
 
-    Public Shared Function LogLevelToString(Value As LogLevel) As String
+    Public Function LogLevelToString(Value As LogLevel) As String
         Select Case Value
             Case LogLevel.All
                 Return "All"
@@ -218,7 +186,7 @@ Public NotInheritable Class Logging
         End Select
     End Function
 
-    Public Shared Sub RemoveLogListener(listener As ILogListener)
+    Public Sub RemoveLogListener(listener As ILogListener)
         SyncLock gLogListeners
             gLogListeners.Remove(listener)
         End SyncLock
@@ -226,22 +194,29 @@ Public NotInheritable Class Logging
     End Sub
 
     ''' <summary>
-    '''  Sets up logging to write all logged events for all infotypes to a default log file.
+    '''  Sets up logging to write all logged events for all infotypes to a 
+    '''  default log file.
     ''' </summary>
-    ''' <param name="synchronized">Set to true if multiple threads may use logging simultaneously.</param>
+    ''' <param name="synchronized">Set to true if multiple threads may use 
+    ''' logging simultaneously.</param>
     ''' <param name="overwriteExisting">
-    ''' If <c>True</c>, an existing log file of the same name is overwritten. Otherwise
-    ''' new log entries are appended to an existing log file of the same name (if non exists,
-    ''' a new log file is created.
+    ''' If <c>True</c>, an existing log file of the same name is overwritten. 
+    ''' Otherwise new log entries are appended to an existing log file of the 
+    ''' same name: if none exists, a new log file is created.
     ''' </param>
     ''' <param name="createBackup">
-    ''' If <c>True</c>, a backup copy of an existing log file of the same name is created.
+    ''' If <c>True</c>, a backup copy of an existing log file of the same name 
+    ''' is created.
     ''' </param>
-    ''' <returns>The path and filename of the log file.</returns>
+    ''' <returns>The path and filename of the log file. Note that this may 
+    ''' differ from the value returned by <c>DefaultLogFileName</c> before 
+    ''' this method was called, as the filename may have been modified (for 
+    ''' example if the specified logfile is already in use).</returns>
     ''' <remarks>
-    ''' The logging level is governed by the global <see cref="DefaultLogLevel"/> property,
-    ''' but can be overridden if the application's command line specifies the <c>/loglevel</c>
-    ''' switch, which can take any of the following values:
+    ''' The logging level is governed by the global <see cref="DefaultLogLevel"/> 
+    ''' property, but can be overridden if the application's command line 
+    ''' specifies the <c>/loglevel</c> switch, which can take any of the 
+    ''' following values:
     ''' <ul>
     '''     <li>None    or 0</li>
     '''     <li>Severe  or S</li>
@@ -254,14 +229,18 @@ Public NotInheritable Class Logging
     '''     <li>All     or A</li>
     ''' </ul>
     '''
-    ''' If the application's command line includes the &quot;/log&quot; switch, then
+    ''' If the application's command line includes the /log switch, then
     ''' the switch's value specifies the log file path and filename.
     '''
-    ''' Otherwise, the log file is called <c>.log</c>, and is created in the application's 
-    ''' settings folder as determined by the <see cref="Application.LocalUserAppDataPath"/> property).
+    ''' Otherwise, the log file is called <c>logfile.log</c>, and is created 
+    ''' in the application's settings folder as determined by the 
+    ''' <see cref="DataStorage.ApplicationDataPathUser"/> property).
     ''' </remarks>
     ''' 
-    Public Shared Function SetupDefaultLogging(Optional synchronized As Boolean = False, Optional overwriteExisting As Boolean = True, Optional createBackup As Boolean = False) As String
+    Public Function SetupDefaultLogging(
+                    Optional synchronized As Boolean = False,
+                    Optional overwriteExisting As Boolean = True,
+                    Optional createBackup As Boolean = False) As String
         Static called As Boolean
         If called Then Throw New InvalidOperationException("SetupDefaultLogging has already been called")
         called = True
@@ -274,18 +253,19 @@ Public NotInheritable Class Logging
             DefaultLogLevel = LogLevel.Normal
         End If
 
-        AddLogListener("", New FileLogListener(DefaultLogFileName,
-                                                  New BasicLogFormatter(),
-                                                  overwriteExisting,
-                                                  createBackup,
-                                                  True), synchronized)
+        Dim logFile = CreateWriteableTextFile(DefaultLogFileName,
+                                              overwriteExisting,
+                                              createBackup,
+                                              True)
+
+        AddLogListener("", New FileLogListener(logFile), synchronized)
 
         Dim ass = Assembly.GetEntryAssembly
         If ass IsNot Nothing Then DefaultLogger.Log(ass.FullName)
         DefaultLogger.Log(Assembly.GetExecutingAssembly.FullName)
         DefaultLogger.Log("Log level: " & LogLevelToString(DefaultLogLevel))
         DefaultLogger.Log("Log file:  " & DefaultLogFileName)
-        Return DefaultLogFileName
+        Return logFile.Name
     End Function
 
-End Class
+End Module
