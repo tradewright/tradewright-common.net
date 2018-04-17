@@ -101,26 +101,13 @@ End Enum
 Public Module Time
 
     ''' <summary>
-    ''' Returns the date of the first day of the month containing the supplied date.
+    ''' Returns the number of the week in the year containing the supplied date. Week 1
+    ''' is the first complete week in the year.
     ''' </summary>
     ''' <param name="pDate">The date.</param>
-    ''' <returns>A <c>Date</c> representing the first day of the month containing the supplied date.</returns>
-    Public Function GetMonthStartDate(
-                pDate As Date) As Date
-        Return GetMonthStartDateFromMonthNumber(Month(pDate), pDate)
-    End Function
-
-    ''' <summary>
-    ''' Returns the date of the first day of the specified month in the year containing the supplied date.
-    ''' </summary>
-    ''' <param name="monthNumber">The month number. The value supplied need not be restricted to the range 1-12.</param>
-    ''' <param name="baseDate">The date that identifies the relevant year.</param>
-    ''' <returns>A <c>Date</c> representing the first day of the specified month in the year containing the supplied date.</returns>
-    Public Function GetMonthStartDateFromMonthNumber(
-                monthNumber As Integer,
-                baseDate As Date) As Date
-        Dim yearStart = DateAdd(DateInterval.Day, 1 - DatePart(DateInterval.DayOfYear, baseDate), baseDate.Date)
-        Return DateAdd(DateInterval.Month, monthNumber - 1, yearStart)
+    ''' <returns>The <c>Integer/c> number of the week containing the supplied date.</returns>
+    Public Function GetWeekNumber(pDate As Date) As Integer
+        Return CInt(Math.Floor((pDate.DayOfYear - DayOfWeekMon(pDate) + 7) / 7))
     End Function
 
     ''' <summary>
@@ -130,13 +117,7 @@ Public Module Time
     ''' <returns>A <c>Date</c> representing the first day of the week containing the supplied date.</returns>
     Public Function GetWeekStartDate(
                 pDate As Date) As Date
-        Dim theDate = pDate.Date
-        Dim weekNum = DatePart(DateInterval.WeekOfYear, pDate.Date, FirstDayOfWeek.Monday, FirstWeekOfYear.FirstFullWeek)
-        If weekNum >= 52 And theDate.Month = 1 Then
-            ' this must be part of the final week of the previous year
-            theDate = DateAdd(DateInterval.Year, -1, theDate)
-        End If
-        Return GetWeekStartDateFromWeekNumber(weekNum, theDate)
+        Return pDate.AddDays(-DayOfWeekMon(pDate) + 1)
     End Function
 
     ''' <summary>
@@ -148,17 +129,17 @@ Public Module Time
     Public Function GetWeekStartDateFromWeekNumber(
                 weekNumber As Integer,
                 baseDate As Date) As Date
-        Dim yearStart = DateAdd(DateInterval.Day, 1 - DatePart(DateInterval.DayOfYear, baseDate), baseDate)
-        Dim dow1 = DatePart(DateInterval.Weekday, yearStart, FirstDayOfWeek.Monday) ' day of week of 1st Jan of base year
+        Dim yearStart = baseDate.AddDays(1 - baseDate.DayOfYear)
+        Dim dow1 = DayOfWeekMon(yearStart) ' day of week of 1st Jan of base year
 
         Dim week1Date As Date
         If dow1 = 1 Then
             week1Date = yearStart
         Else
-            week1Date = DateAdd(DateInterval.Day, 8 - dow1, yearStart)
+            week1Date = yearStart.AddDays(8 - dow1)
         End If
 
-        Return DateAdd(DateInterval.WeekOfYear, weekNumber - 1, week1Date)
+        Return week1Date.AddDays(7 * (weekNumber - 1))
     End Function
 
     ''' <summary>
@@ -172,15 +153,15 @@ Public Module Time
                 dayNumber As Integer,
                 baseDate As Date) As Date
 
-        Dim yearStart = DateAdd("d", 1 - DatePart("y", baseDate), baseDate)
+        Dim yearStart = baseDate.AddDays(1 - baseDate.DayOfYear)
 
         Do While dayNumber < 0
-            Dim yearEnd = DateAdd(DateInterval.Day, -1, yearStart)
-            yearStart = DateAdd(DateInterval.Year, -1, yearStart)
+            Dim yearEnd = yearStart.AddDays(-1)
+            yearStart = yearStart.AddYears(1)
             dayNumber = dayNumber + GetWorkingDayNumber(yearEnd) + 1
         Loop
 
-        Dim dow1 = DatePart("w", yearStart, vbMonday)   ' day of week of 1st Jan of base year
+        Dim dow1 = DayOfWeekMon(yearStart)  ' day of week of 1st Jan of base year
 
         Dim wd1 As Integer     ' weekdays in first week (excluding weekend)
         Dim we1 As Integer     ' weekend days at start of first week
@@ -204,11 +185,11 @@ Public Module Time
             doy = we1 + dayNumber
         Else
             ' number of whole weeks after the first week
-            Dim numWholeWeeks = CInt(Int((dayNumber - wd1) / 5)) - 1
+            Dim numWholeWeeks = CInt(Math.Floor((dayNumber - wd1) / 5)) - 1
             doy = wd1 + we1 + If(numWholeWeeks > 0, 7 * numWholeWeeks + 5, 5) + If(((dayNumber - wd1) Mod 5) > 0, ((dayNumber - wd1) Mod 5) + 2, 0)
         End If
 
-        Return DateAdd(DateInterval.Day, doy - 1, yearStart)
+        Return yearStart.AddDays(doy - 1)
     End Function
 
     ''' <summary>
@@ -220,10 +201,10 @@ Public Module Time
     Public Function GetWorkingDayNumber(
                 pDate As Date) As Integer
 
-        Dim doy = DatePart(DateInterval.DayOfYear, pDate, vbMonday)    ' day of year
-        Dim woy = DatePart(DateInterval.WeekOfYear, pDate, vbMonday)   ' week of year
-        Dim dow = DatePart(DateInterval.Weekday, pDate, vbMonday)     ' day of week of supplied date
-        Dim dow1 = DatePart(DateInterval.Weekday, DateAdd(DateInterval.Day, 1 - doy, pDate), vbMonday) ' day of week of 1st Jan
+        Dim doy = pDate.DayOfYear   ' day of year
+        Dim woy = GetWeekNumber(pDate)  ' week of year
+        Dim dow = DayOfWeekMon(pDate)   ' day of week of supplied date
+        Dim dow1 = DayOfWeekMon(pDate.AddDays(1 - doy)) ' day of week of 1st Jan
 
         Dim wd1 As Integer     ' weekdays in first week (excluding weekend)
         If dow1 = 7 Then
@@ -284,16 +265,20 @@ Public Module Time
                 If noMillisecs Then Return timestamp.ToString("yyyy-MM-dd HH:mm:ss")
                 Return timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff")
             Case TimestampFormats.TimeOnlyLocal
-                Return timestamp.ToLongTimeString()
+                Return timestamp.ToString("D")
             Case TimestampFormats.DateOnlyLocal
-                Return timestamp.ToShortDateString()
+                Return timestamp.ToString("d")
             Case TimestampFormats.DateAndTimeLocal
-                Return timestamp.ToShortDateString() & " " & timestamp.ToLongTimeString()
+                Return timestamp.ToString("d") & " " & timestamp.ToString("D")
             Case Else
                 Throw New ArgumentException("Invalid format option")
         End Select
 
         If includeTimezone Then Throw New NotImplementedException
+    End Function
+
+    Private Function DayOfWeekMon([date] As Date) As Integer
+        Return If([date].DayOfWeek = DayOfWeek.Sunday, 7, [date].DayOfWeek)
     End Function
 
 End Module
