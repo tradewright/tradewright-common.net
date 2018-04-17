@@ -81,7 +81,7 @@ Public NotInheritable Class CommandLineParser
         ''' <remarks></remarks>
         Public ReadOnly Property Value As String = String.Empty
 
-        Friend Sub New(value As String, caseSensitive As Boolean)
+        Friend Sub New(value As String)
             Dim i = value.IndexOf(":")
             If i >= 0 Then
                 Name = value.Substring(0, i)
@@ -89,7 +89,6 @@ Public NotInheritable Class CommandLineParser
             Else
                 Name = value
             End If
-            If caseSensitive Then Name = Name.ToUpper
         End Sub
     End Class
 
@@ -111,7 +110,7 @@ Public NotInheritable Class CommandLineParser
     ''' </summary>
     ''' <param name="inputString">The command line arguments to be parsed. For a Visual Basic 6 program,
     '''  this value may be obtained using the <c>Command</c> function.</param>
-    ''' <param name="separator">A single Character used as the separator between command line arguments.</param>
+    ''' <param name="separator">A single character used as the separator between command line arguments.</param>
     ''' <remarks></remarks>
     Public Sub New(inputString As String, Optional separator As String = " ", Optional caseSensitive As Boolean = False)
         mInputString = inputString.Trim
@@ -245,9 +244,10 @@ Public NotInheritable Class CommandLineParser
     End Function
 
     Private Function findSwitch(name As String) As Integer
-        If mCaseSensitive Then name = name.ToUpper
         For i = 0 To mSwitches.Count - 1
-            If mSwitches(i).Name = name Then Return i
+            If If(mCaseSensitive,
+                    name.Equals(mSwitches(i).Name, StringComparison.CurrentCultureIgnoreCase),
+                    name.Equals(mSwitches(i).Name)) Then Return i
         Next
         Return -1
     End Function
@@ -255,16 +255,14 @@ Public NotInheritable Class CommandLineParser
     Private Sub getArgs()
         If mInputString = "" Then Exit Sub
 
-        Dim unbalancedQuotes = False
-
         Dim partialArg As String = String.Empty
-        For Each argument In mInputString.Split({mSep}, If(mSep = " ", StringSplitOptions.RemoveEmptyEntries, StringSplitOptions.None))
-            If argument = String.Empty And mSep = String.Empty Then
+        For Each argument In mInputString.Split({mSep}, StringSplitOptions.None)
+            If String.IsNullOrEmpty(partialArg) And argument = String.Empty And mSep = " " Then
+                ' discard spaces when the separator is a space and we don't have unbalanced quotes
             Else
-                If Not String.IsNullOrEmpty(partialArg) Then partialArg = partialArg & mSep
-                partialArg = partialArg & argument
-                unbalancedQuotes = ContainsUnbalancedQuotes(partialArg)
-                If Not unbalancedQuotes Then
+                If Not String.IsNullOrEmpty(partialArg) Then partialArg &= mSep
+                partialArg &= argument
+                If Not ContainsUnbalancedQuotes(partialArg) Then
                     setSwitchOrArg(partialArg.Trim())
                     partialArg = String.Empty
                 End If
@@ -294,7 +292,7 @@ Public NotInheritable Class CommandLineParser
     End Sub
 
     Private Sub setSwitch(val As String)
-        Dim switchEntry = New SwitchEntry(val, mCaseSensitive)
+        Dim switchEntry = New SwitchEntry(val)
         mSwitches.Add(switchEntry)
     End Sub
 
