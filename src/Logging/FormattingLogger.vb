@@ -40,6 +40,7 @@ Imports System.Reflection
 '''
 ''' </remarks>
 Public NotInheritable Class FormattingLogger
+    Implements IFormattingLogger
 
     '@================================================================================
     ' Interfaces
@@ -120,7 +121,7 @@ Public NotInheritable Class FormattingLogger
     '   The logging level used by this <c>FormattingLogger</c> object in deciding
     '   whether to log.
     '@/
-    Public Property LogLevel() As LogLevel
+    Public Property LogLevel() As LogLevel Implements IFormattingLogger.LogLevel
         Get
             Return mLogger.LogLevel
         End Get
@@ -136,7 +137,7 @@ Public NotInheritable Class FormattingLogger
     ''' <returns>If <c>True</c>, this <c>Logger</c> object logs to its Parent
     '''   <c>Logger</c> object.
     ''' </returns>
-    Public Property LogToParent() As Boolean
+    Public Property LogToParent() As Boolean Implements IFormattingLogger.LogToParent
         Get
             LogToParent = mLogger.LogToParent
         End Get
@@ -156,7 +157,7 @@ Public NotInheritable Class FormattingLogger
     ''' <returns>Returns <c>True</c> if the message would be logged, and <c>False</c>
     '''  otherwise.</returns>
     ''' <remarks></remarks>
-    Public Function IsLoggable(level As LogLevel) As Boolean
+    Public Function IsLoggable(level As LogLevel) As Boolean Implements IFormattingLogger.IsLoggable
         IsLoggable = mLogger.IsLoggable(level)
     End Function
 
@@ -173,7 +174,7 @@ Public NotInheritable Class FormattingLogger
     ''' object for the infotype handled by this <see cref="FormattingLogger"></see> is <c>True</c>,
     ''' then the data is also logged by the parent logger.
     ''' </remarks>
-    Public Sub Log(msg As String, Optional logLevel As LogLevel = LogLevel.Normal)
+    Public Sub Log(msg As String, Optional logLevel As LogLevel = LogLevel.Normal) Implements IFormattingLogger.Log
         LogIt(msg, "", "", logLevel)
     End Sub
 
@@ -192,7 +193,7 @@ Public NotInheritable Class FormattingLogger
     ''' object for the infotype handled by this <see cref="FormattingLogger"></see> is <c>True</c>,
     ''' then the data is also logged by the parent logger.
     ''' </remarks>
-    Public Sub Log(msg As String, moduleName As String, procName As String, Optional logLevel As LogLevel = LogLevel.Normal)
+    Public Sub Log(msg As String, moduleName As String, procName As String, Optional logLevel As LogLevel = LogLevel.Normal) Implements IFormattingLogger.Log
         LogIt(msg, moduleName, procName, logLevel)
     End Sub
 
