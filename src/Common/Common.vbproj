@@ -1,10 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
-    <AssemblyName>TradeWright.Utilities</AssemblyName>
-    <RootNamespace>TradeWright.Utilities</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>TradeWright.Common</AssemblyName>
+    <RootNamespace>TradeWright.Utilities.Common</RootNamespace>
     <OptionStrict>On</OptionStrict>
+    <Copyright>Copyright (c) 2017-2018 Richard L King (TradeWright Software Systems)</Copyright>
+    <Authors>Richard L King</Authors>
+    <Company>TradeWright Software Systems</Company>
+    <Product>TradeWright Common Utilities</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -15,7 +20,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn />
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-    <OutputPath>..\..\bin\debug\</OutputPath>
+    <OutputPath>..\..\bin\debug\lib\</OutputPath>
   </PropertyGroup>
 
 </Project>

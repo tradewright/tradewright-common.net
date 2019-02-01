@@ -24,24 +24,14 @@
 
 #End Region
 
-Public Class ChangeEventArgs
+Public Class ChangeEventArgs(Of TEnum As {Structure, IConvertible})
     Inherits EventArgs
 
-    Public Sub New(ByVal changeType As Integer)
+    Public Sub New(ByVal changeType As TEnum)
         Me.ChangeType = changeType
     End Sub
 
-    Public ReadOnly Property ChangeType() As Integer
+    Public ReadOnly Property ChangeType() As TEnum
 End Class
 
-Public Class StateChangeEventArgs(Of TEnum As {Structure, IConvertible})
-    Inherits EventArgs
-
-    Public Sub New(ByVal state As TEnum)
-        Me.State = state
-    End Sub
-
-    Public ReadOnly Property State() As TEnum
-
-End Class
 
