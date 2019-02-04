@@ -41,6 +41,31 @@ Public Module DataStorage
         End Set
     End Property
 
+    ''' <summary>
+    '''     Creates a <c>FileStream</c> object for a file that allows write access and 
+    '''     concurrent read access.
+    ''' </summary>
+    ''' <param name="filePath">
+    '''     The path to the file for a which a <c>FileStream</c> is required.
+    '''     
+    '''     Note that the actual file path used may be modified as a result of
+    '''     using the <c>createBackup</c> and <c>incrementFilenameIfInUse</c> parameters.
+    ''' </param>
+    ''' <param name="append">
+    '''     The filestream is to be opened for appending. If this is <c>True</c>,
+    '''     the <c>createBackup</c> parameter is ignored.
+    ''' </param>
+    ''' <param name="createBackup">
+    '''     If a file with the specified name already exists, that file is renamed with 
+    '''     a <c>.bakn</c> string before the extension. n is blank for the first such
+    '''     rename, 1 for the second, 2 for the third, and so on.
+    ''' </param>
+    ''' <param name="incrementFilenameIfInUse">
+    '''     If the relevant file is already in use, or access is denied, then
+    '''     the filename is modified by appending <c>-n</c> before the extension,
+    '''     where n is successively incremented until an available filename is found.
+    ''' </param>
+    ''' <returns>A <c>FileStream</c> object</returns>
     Public Function CreateWriteableTextFile(
                 filePath As String,
                 Optional append As Boolean = False,
@@ -54,10 +79,6 @@ Public Module DataStorage
         Catch e As IOException
         End Try
 
-        Dim directory = Path.GetDirectoryName(filePath)
-        Dim filename = Path.GetFileName(filePath)
-        Dim extension = Path.GetExtension(filePath)
-
         If Not createBackup Then
             ' nothing to do here
         ElseIf append Then
@@ -65,61 +86,63 @@ Public Module DataStorage
         ElseIf Not File.Exists(filePath) Then
             ' nothing to back up
         Else
-            createBackupFile(filePath, directory, filename, extension)
+            createBackupFile(filePath)
         End If
 
-        Return createNewFile(filePath, directory, filename, extension, append, incrementFilenameIfInUse)
+        Return createNewFile(filePath, append, incrementFilenameIfInUse)
     End Function
 
     Private Sub createBackupFile(
-                    originalfilePath As String,
-                    directory As String,
-                    filename As String,
-                    extension As String)
-        Dim newFilename = $"{directory}{Path.DirectorySeparatorChar}{filename}.bak.{extension}"
-        If File.Exists(newFilename) Then
-            Dim i = 0
-            Do
-                i = i + 1
-                newFilename = $"{directory}{Path.DirectorySeparatorChar}{filename}.bak{i}.{extension}"
-            Loop Until Not File.Exists(newFilename)
-        End If
-        Try
-            File.Move(originalfilePath, newFilename)
-        Catch e As IOException
-        Catch e As UnauthorizedAccessException
-        End Try
+                    originalfilePath As String)
+        Dim directory = Path.GetDirectoryName(originalfilePath)
+        Dim filename = Path.GetFileNameWithoutExtension(originalfilePath)
+        Dim extension = Path.GetExtension(originalfilePath)
+
+        Dim newFilename = $"{directory}{Path.DirectorySeparatorChar}{filename}.bak{extension}"
+        Dim i = 0
+        Do
+            If Not File.Exists(newFilename) Then
+                Try
+                    File.Move(originalfilePath, newFilename)
+                    Exit Do
+                Catch e As IOException
+                Catch e As UnauthorizedAccessException
+                End Try
+            End If
+            i += 1
+            newFilename = $"{directory}{Path.DirectorySeparatorChar}{filename}.bak{i}{extension}"
+        Loop
     End Sub
 
     Private Function createNewFile(
                     originalfilePath As String,
-                    directory As String,
-                    filename As String,
-                    extension As String,
                     append As Boolean,
                     increment As Boolean) As FileStream
-        Dim fileInfo = New FileInfo(originalfilePath)
-        Try
-            Return fileInfo.Open(If(append, FileMode.Append, FileMode.Create), FileAccess.Write)
-        Catch e As System.UnauthorizedAccessException
+        Dim directory = Path.GetDirectoryName(originalfilePath)
+        Dim filename = Path.GetFileNameWithoutExtension(originalfilePath)
+        Dim extension = Path.GetExtension(originalfilePath)
+
+        IO.Directory.CreateDirectory(directory)
+
+        Dim filePath = originalfilePath
+        Dim i = 0
+        Do
+            Try
+                Return New FileStream(filePath,
+                                    If(append, FileMode.Append, FileMode.Create),
+                                    FileAccess.ReadWrite,
+                                    FileShare.Read)
+            Catch e As UnauthorizedAccessException
+            Catch e As IOException
+            End Try
 
             If Not increment Then Throw New UnauthorizedAccessException("File already in use or access denied")
 
             ' now increment the filename until we find one we can use
-            Dim i = 1
             Do
-                Dim filePath = $"{directory}{Path.DirectorySeparatorChar}{filename}-{i}.{extension}"
-                If Not File.Exists(filePath) Then
-                    Try
-                        IO.Directory.CreateDirectory(Path.GetDirectoryName(filePath))
-                        Dim fi = New FileInfo(filePath)
-                        Dim fs = fi.Open(If(append, FileMode.Append, FileMode.Create), FileAccess.Write)
-                        Return fs
-                    Catch ex As IOException
-                    End Try
-                End If
-                i = i + 1
-            Loop
-        End Try
+                i += 1
+                filePath = $"{directory}{Path.DirectorySeparatorChar}{filename}-{i}{extension}"
+            Loop While File.Exists(filePath)
+        Loop
     End Function
 End Module
