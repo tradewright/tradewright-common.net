@@ -149,7 +149,7 @@ Public NotInheritable Class Logger
     Private mParent As Logger
     Private mLogToParent As Boolean = True
 
-    Private mInfoType As String
+    Private ReadOnly mInfoType As String
 
     '@================================================================================
     ' Class Event Handlers
@@ -295,11 +295,11 @@ Public NotInheritable Class Logger
     ' Helper Functions
     '@================================================================================
 
-    Private isDisposed As Boolean = False        ' To detect redundant calls
+    Private mIsDisposed As Boolean = False        ' To detect redundant calls
 
     ' IDisposable
-    Private Sub Dispose(disposing As Boolean)
-        If Not Me.isDisposed Then
+    Private Sub dispose(disposing As Boolean)
+        If Not Me.mIsDisposed Then
             If disposing Then
                 RaiseEvent Finished(Me, EventArgs.Empty)
             End If
@@ -307,14 +307,14 @@ Public NotInheritable Class Logger
             ' TODO: free your own state (unmanaged objects).
             ' TODO: set large fields to null.
         End If
-        Me.isDisposed = True
+        Me.mIsDisposed = True
     End Sub
 
 #Region " IDisposable Support "
     ' This code added by Visual Basic to correctly implement the disposable pattern.
     Public Sub Dispose() Implements IDisposable.Dispose
         ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-        Dispose(True)
+        dispose(True)
         GC.SuppressFinalize(Me)
     End Sub
 #End Region

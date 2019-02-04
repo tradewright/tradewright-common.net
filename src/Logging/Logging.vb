@@ -42,7 +42,7 @@ Public Module Logging
     Private mSequenceNumber As Integer = 0
     Private mLogFileName As String = String.Empty
 
-    Private gLogListeners As New HashSet(Of ILogListener)
+    Private mLogListeners As New HashSet(Of ILogListener)
 
     ''' <summary>
     ''' Returns the path and filename of the log file created by a call to the
@@ -80,7 +80,7 @@ Public Module Logging
             If value = LogLevel.All Then
                 ' this is allowed
             Else
-                Debug.Assert(IsLogLevelPermittedForApplication(value), "This Value is not permitted in this context")
+                Debug.Assert(IsLogLevelPermittedForApplication(value), "This value is not permitted in this context")
             End If
 
             mDefaultLogLevel = value
@@ -88,20 +88,20 @@ Public Module Logging
     End Property
 
     Public Sub AddLogListener(infoType As String, listener As ILogListener, Optional synchronized As Boolean = False)
-        SyncLock gLogListeners
-            If gLogListeners.Contains(listener) Then Throw New InvalidOperationException("This listener has already been added")
-            gLogListeners.Add(listener)
+        SyncLock mLogListeners
+            If mLogListeners.Contains(listener) Then Throw New InvalidOperationException("This listener has already been added")
+            mLogListeners.Add(listener)
             listener.Initialise(GetLogger(infoType), synchronized)
         End SyncLock
     End Sub
 
     Public Sub Close()
         mLogManager.Close()
-        SyncLock gLogListeners
-            For Each logListener In gLogListeners
+        SyncLock mLogListeners
+            For Each logListener In mLogListeners
                 logListener.Dispose()
             Next
-            gLogListeners.Clear()
+            mLogListeners.Clear()
         End SyncLock
     End Sub
 
@@ -213,8 +213,8 @@ Public Module Logging
     End Function
 
     Public Sub RemoveLogListener(listener As ILogListener)
-        SyncLock gLogListeners
-            gLogListeners.Remove(listener)
+        SyncLock mLogListeners
+            mLogListeners.Remove(listener)
         End SyncLock
         listener.Dispose()
     End Sub
@@ -280,7 +280,7 @@ Public Module Logging
         End If
 
         Dim logFile = CreateWriteableTextFile(DefaultLogFileName,
-                                              overwriteExisting,
+                                              Not overwriteExisting,
                                               createBackup,
                                               True)
 
