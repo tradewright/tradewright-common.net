@@ -76,14 +76,14 @@ Public Module Logging
         Get
             Return mDefaultLogLevel
         End Get
-        Set(value As LogLevel)
-            If value = LogLevel.All Then
+        Set
+            If Value = LogLevel.All Then
                 ' this is allowed
             Else
-                Debug.Assert(IsLogLevelPermittedForApplication(value), "This value is not permitted in this context")
+                Debug.Assert(IsLogLevelPermittedForApplication(Value), "This value is not permitted in this context")
             End If
 
-            mDefaultLogLevel = value
+            mDefaultLogLevel = Value
         End Set
     End Property
 

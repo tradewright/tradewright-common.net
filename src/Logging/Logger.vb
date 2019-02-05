@@ -88,13 +88,13 @@ Public NotInheritable Class Logger
 
     ''
     ' Objects of this class are used to log information of a particular type
-    ' (commonly known as an &quot;infotype&quot;).
+    ' (commonly known as an 'infotype').
     '
     ' Information type names form a hierarchical namespace, components of a name
-    ' being separated by a period Character (ie &quot;.&quot;). The root of the tree is
+    ' being separated by a period character (ie '.'). The root of the tree is
     ' an empty string. Information type names are not case sensitive.
     '
-    ' Infotype names starting with a &quot;$&quot; Character are reserved for use within
+    ' Infotype names starting with a '$' character are reserved for use within
     ' the system. Applications are not able to obtain direct access to the <c>Logger</c>
     ' object for such infotypes.
     '
@@ -106,9 +106,9 @@ Public NotInheritable Class Logger
     ' information type namespace tree.
     '
     ' Each <c>Logger</c> object has a <c>LogLevel</c> property which is a
-    ' Value within the <c>LogLevels</c> enum. If it is set to the Value
-    ' <c>AsParent</c>, then the <c>Logger</c> object obtains its Value
-    ' from its Parent <c>Logger</c> object. A Value of <c>AsParent</c>
+    ' value within the <c>LogLevels</c> enum. If it is set to the value
+    ' <c>LogLevel.AsParent</c>, then the <c>Logger</c> object obtains its value
+    ' from its Parent <c>Logger</c> object. A value of <c>LogLevel.AsParent</c>
     ' for the root <c>Logger</c> object has the same effect as <c>None</c>,
     ' ie it logs nothing.
     '
@@ -195,7 +195,7 @@ Public NotInheritable Class Logger
                 LogLevel = mLogLevel
             End If
         End Get
-        Set(Value As LogLevel)
+        Set
             mLogLevel = Value
         End Set
     End Property
@@ -208,16 +208,9 @@ Public NotInheritable Class Logger
     '''   <c>Logger</c> object.
     ''' </returns>
     Public Property LogToParent() As Boolean Implements ILogger.LogToParent
-        Get
-            LogToParent = mLogToParent
-        End Get
-        Set(Value As Boolean)
-            mLogToParent = Value
-        End Set
-    End Property
 
     Friend WriteOnly Property Parent() As Logger
-        Set(Value As Logger)
+        Set
             mParent = Value
         End Set
     End Property

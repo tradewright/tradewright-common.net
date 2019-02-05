@@ -125,7 +125,7 @@ Public NotInheritable Class FormattingLogger
         Get
             Return mLogger.LogLevel
         End Get
-        Set(Value As LogLevel)
+        Set
             mLogger.LogLevel = Value
         End Set
     End Property
@@ -141,7 +141,7 @@ Public NotInheritable Class FormattingLogger
         Get
             LogToParent = mLogger.LogToParent
         End Get
-        Set(Value As Boolean)
+        Set
             mLogger.LogToParent = Value
         End Set
     End Property
