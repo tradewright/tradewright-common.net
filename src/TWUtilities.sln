@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Utils", "Utils\Utils.vbproj", "{FA7D0528-E18C-402D-98BA-C6517A96F4BF}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Common", "Common\Common.vbproj", "{FA7D0528-E18C-402D-98BA-C6517A96F4BF}"
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Logging", "Logging\Logging.vbproj", "{D91CF403-6B37-43B4-9230-E8B9BC944853}"
 EndProject
@@ -13,7 +13,7 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "TimeTests", "TimeTests\Time
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CommandLine", "CommandLine\CommandLine.vbproj", "{297B744B-EDD6-4B32-830C-42CC25F09A4A}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DataStorage", "DataStorage\DataStorage.vbproj", "{41423C29-9F2A-4DF3-8E8F-B775F1A919AF}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "DataStorage", "DataStorage\DataStorage.vbproj", "{41423C29-9F2A-4DF3-8E8F-B775F1A919AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

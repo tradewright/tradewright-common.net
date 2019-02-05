@@ -1,15 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>TradeWright.CommandLine</AssemblyName>
     <RootNamespace>TradeWright.Utilities.CommandLine</RootNamespace>
     <OptionStrict>On</OptionStrict>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Company>TradeWright Software Systems</Company>
+    <Authors>Richard L King</Authors>
+    <Product>TradeWright CommandLine Parser</Product>
+    <Copyright>Copyright (c) 2017-2018 Richard L King (TradeWright Software Systems)</Copyright>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn />
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+    <OutputPath>..\..\bin\release\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
