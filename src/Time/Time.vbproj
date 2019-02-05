@@ -19,12 +19,14 @@
     <NoWarn />
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
     <OutputPath>..\..\bin\release\</OutputPath>
+    <DocumentationFile>TradeWright.Time.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn />
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
     <OutputPath>..\..\bin\debug\</OutputPath>
+    <DocumentationFile>TradeWright.Time.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>
